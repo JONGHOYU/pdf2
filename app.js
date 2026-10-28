@@ -4,9 +4,9 @@
  * No data is transmitted over the network.
  */
 
-// Configure PDF.js worker via CDN or inline
+// Configure PDF.js worker to local offline file
 if (window.pdfjsLib) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js';
 }
 
 // State
@@ -200,6 +200,12 @@ function updateProgress(percent, title, desc, pageMeta) {
 // Compression process
 async function startCompression() {
   if (!originalBytes) return;
+
+  if (typeof PDFLib === 'undefined' && typeof window.PDFLib === 'undefined') {
+    alert('PDF 라이브러리가 로드되지 않았습니다. 새로고침 후 다시 시도해주세요.');
+    return;
+  }
+  const pdfLibInstance = window.PDFLib || PDFLib;
 
   const selectedMode = document.querySelector('input[name="compress-mode"]:checked').value;
   const quality = parseFloat(qualitySlider.value) / 100;
