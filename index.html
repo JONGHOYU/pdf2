@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="100% 로컬 브라우저 메모리 내에서 안전하게 동작하는 스마트 PDF 압축기. 외부 서버 전송 없이 안전하게 PDF 용량을 줄이세요.">
+  <title>DocComp - 100% 프라이빗 로컬 PDF 압축기</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- PDF-Lib (순수 브라우저 클라이언트 PDF 조작 라이브러리) -->
+  <script src="https://unpkg.com/pdf-lib@1.17.9/dist/pdf-lib.min.js"></script>
+  <!-- PDF.js (순수 브라우저 렌더링 & 래스터라이징 라이브러리) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <header class="app-header">
+    <div class="container header-container">
+      <div class="logo">
+        <div class="logo-icon">
+          <i class="fa-solid fa-file-shield"></i>
+        </div>
+        <div class="logo-text">
+          <span class="logo-title">DocComp</span>
+          <span class="badge-secure"><i class="fa-solid fa-lock"></i> 100% On-Device</span>
+        </div>
+      </div>
+      <div class="privacy-notice">
+        <span class="status-indicator"></span>
+        <span class="privacy-text">모든 처리는 로컬 브라우저 메모리(RAM)에서만 이루어집니다</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-content">
+    <!-- Hero / Intro -->
+    <section class="hero-section">
+      <h1 class="hero-title">외부 전송 없이 안전하게,<br><span class="gradient-text">내 컴퓨터 메모리에서 압축하는 PDF</span></h1>
+      <p class="hero-desc">
+        서버로 파일을 절대 업로드하지 않습니다. 인터넷 연결이 끊겨도 작동하며, 민감한 개인정보나 사내 기밀 문서를 안전하게 압축하세요.
+      </p>
+    </section>
+
+    <!-- Main Card -->
+    <div class="compressor-card">
+      
+      <!-- Upload Zone -->
+      <div id="drop-zone" class="drop-zone">
+        <input type="file" id="file-input" accept="application/pdf" hidden>
+        <div class="drop-zone-content">
+          <div class="upload-icon-wrapper">
+            <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+          </div>
+          <h2 class="upload-title">PDF 파일을 끌어다 놓거나 클릭하여 선택하세요</h2>
+          <p class="upload-subtitle">최대 200MB 이상의 대용량 PDF도 메모리에서 안전하게 처리됩니다</p>
+          <button id="browse-btn" class="btn btn-primary browse-btn" type="button">
+            <i class="fa-solid fa-folder-open"></i> 파일 찾아보기
+          </button>
+        </div>
+      </div>
+
+      <!-- File Details & Compression Options (Initially Hidden) -->
+      <div id="settings-panel" class="settings-panel hidden">
+        
+        <!-- File Info Bar -->
+        <div class="file-info-bar">
+          <div class="file-icon-box">
+            <i class="fa-solid fa-file-pdf"></i>
+          </div>
+          <div class="file-meta">
+            <div id="file-name" class="file-name">document.pdf</div>
+            <div class="file-meta-sub">
+              <span id="file-orig-size" class="file-size-badge">0 KB</span>
+              <span class="bullet">•</span>
+              <span id="file-pages" class="file-pages-badge">0 페이지</span>
+            </div>
+          </div>
+          <button id="remove-file-btn" class="btn-icon" title="파일 변경/취소">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Strategy Tabs -->
+        <div class="options-container">
+          <h3 class="section-heading"><i class="fa-solid fa-sliders"></i> 압축 모드 선택</h3>
+          
+          <div class="strategy-grid">
+            <!-- Mode 1: Metadata & Stream Optimization (Lossless/Structure) -->
+            <label class="strategy-card active" for="mode-structure">
+              <input type="radio" name="compress-mode" id="mode-structure" value="structure" checked>
+              <div class="card-radio-mark"></div>
+              <div class="strategy-icon"><i class="fa-solid fa-bolt"></i></div>
+              <div class="strategy-title">스마트 구조 최적화</div>
+              <div class="strategy-desc">텍스트/벡터 품질 100% 보존. 미사용 메타데이터, 중복 리소스 제거 및 내부 오브젝트 스트림 재압축</div>
+              <div class="strategy-tag quality-high">화질 손실 없음 (권장)</div>
+            </label>
+
+            <!-- Mode 2: Balanced Resampling -->
+            <label class="strategy-card" for="mode-balanced">
+              <input type="radio" name="compress-mode" id="mode-balanced" value="balanced">
+              <div class="card-radio-mark"></div>
+              <div class="strategy-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+              <div class="strategy-title">균형 압축 (화질 + 용량)</div>
+              <div class="strategy-desc">스캔 문서나 고해상도 이미지가 포함된 PDF에 적합. 시각적 선명도를 유지하며 이미지 최적화</div>
+              <div class="strategy-tag quality-mid">높은 용량 절감 (약 40~70%)</div>
+            </label>
+
+            <!-- Mode 3: Maximum Compression -->
+            <label class="strategy-card" for="mode-extreme">
+              <input type="radio" name="compress-mode" id="mode-extreme" value="extreme">
+              <div class="card-radio-mark"></div>
+              <div class="strategy-icon"><i class="fa-solid fa-compress"></i></div>
+              <div class="strategy-title">최대 압축 모드</div>
+              <div class="strategy-desc">이메일 첨부 한도나 파일 업로드 제한(예: 10MB 이하)을 맞추기 위해 강도 높은 최적화 수행</div>
+              <div class="strategy-tag quality-max">극대화 압축 (약 60~90%)</div>
+            </label>
+          </div>
+
+          <!-- Advanced Custom Controls (Collapsible) -->
+          <div class="advanced-toggle-wrapper">
+            <button id="toggle-advanced-btn" type="button" class="btn-text">
+              <i class="fa-solid fa-chevron-down toggle-arrow"></i> 세부 품질 및 해상도 직접 조정
+            </button>
+            <div id="advanced-settings" class="advanced-settings hidden">
+              <div class="slider-group">
+                <div class="slider-header">
+                  <span class="slider-label">이미지 압축 품질 (JPEG Quality)</span>
+                  <span id="quality-val" class="slider-value">80%</span>
+                </div>
+                <input type="range" id="quality-slider" min="30" max="95" value="80" step="5">
+              </div>
+
+              <div class="slider-group">
+                <div class="slider-header">
+                  <span class="slider-label">이미지 렌더 스케일 (DPI 축소 비율)</span>
+                  <span id="scale-val" class="slider-value">1.5x (균형 해상도)</span>
+                </div>
+                <input type="range" id="scale-slider" min="0.8" max="2.5" value="1.5" step="0.1">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <div class="action-footer">
+          <button id="start-compress-btn" class="btn btn-action" type="button">
+            <i class="fa-solid fa-file-zipper"></i> 로컬 메모리에서 압축 시작
+          </button>
+        </div>
+      </div>
+
+      <!-- Processing Progress View (Initially Hidden) -->
+      <div id="progress-panel" class="progress-panel hidden">
+        <div class="spinner-wrapper">
+          <div class="radar-spinner"></div>
+          <i class="fa-solid fa-shield-halved spinner-center-icon"></i>
+        </div>
+        <h3 id="progress-status" class="progress-status-title">PDF 문서를 메모리에 로드 중...</h3>
+        <p id="progress-substatus" class="progress-status-desc">외부 통신 0건 • 브라우저 Sandbox 환경에서 작업 중</p>
+        
+        <div class="progress-bar-container">
+          <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
+        </div>
+        <div class="progress-meta">
+          <span id="progress-page-count">준비 중</span>
+          <span id="progress-percent">0%</span>
+        </div>
+      </div>
+
+      <!-- Result View (Initially Hidden) -->
+      <div id="result-panel" class="result-panel hidden">
+        <div class="result-success-badge">
+          <i class="fa-solid fa-circle-check"></i> 메모리 압축 완료!
+        </div>
+        <h3 class="result-title">용량이 성공적으로 줄어들었습니다</h3>
+        
+        <div class="comparison-board">
+          <div class="comp-box before">
+            <span class="comp-label">압축 전 원본</span>
+            <span id="result-orig-size" class="comp-size">10.5 MB</span>
+          </div>
+          <div class="comp-divider">
+            <div class="reduction-badge" id="reduction-badge">-65%</div>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+          <div class="comp-box after">
+            <span class="comp-label">압축 후 최종</span>
+            <span id="result-comp-size" class="comp-size-highlight">3.6 MB</span>
+          </div>
+        </div>
+
+        <div class="result-info-box">
+          <i class="fa-solid fa-lock text-success"></i>
+          <span>원본 및 압축 파일은 서버에 전송되지 않았으며, 브라우저를 닫거나 새로고침하면 메모리에서 영구히 소멸합니다.</span>
+        </div>
+
+        <div class="result-actions">
+          <button id="download-btn" class="btn btn-primary btn-large">
+            <i class="fa-solid fa-download"></i> 압축된 PDF 다운로드
+          </button>
+          <button id="reset-btn" class="btn btn-secondary">
+            <i class="fa-solid fa-rotate-left"></i> 다른 파일 압축하기
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Security & Privacy Guarantee Section -->
+    <section class="security-banner">
+      <div class="security-card">
+        <div class="sec-icon"><i class="fa-solid fa-server-slash"></i></div>
+        <h4>서버 미사용 (No Backend)</h4>
+        <p>백엔드 API 서버가 존재하지 않으며, 모든 로직은 사용자의 Chrome/Safari/Edge 브라우저 메모리 안에서 자바스크립트로만 연산됩니다.</p>
+      </div>
+      <div class="security-card">
+        <div class="sec-icon"><i class="fa-solid fa-wifi-slash"></i></div>
+        <h4>오프라인 동작 지원</h4>
+        <p>페이지를 로드한 후 Wi-Fi를 끄거나 비행기 탑승 모드로 전환해도 아무런 제약 없이 100% 정상 작동합니다.</p>
+      </div>
+      <div class="security-card">
+        <div class="sec-icon"><i class="fa-solid fa-memory"></i></div>
+        <h4>휘발성 메모리 즉시 소멸</h4>
+        <p>어떠한 쿠키나 LocalStorage, 원격 데이터베이스에도 파일이 저장되지 않고 작업 완료 시 메모리에서 가비지 컬렉션(GC) 처리됩니다.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <div class="container footer-content">
+      <p>© 2026 DocComp. Private In-Browser PDF Processing.</p>
+      <div class="footer-badges">
+        <span class="privacy-pill"><i class="fa-solid fa-check"></i> Zero Data Leakage</span>
+        <span class="privacy-pill"><i class="fa-solid fa-check"></i> Client-Side Sandbox</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
